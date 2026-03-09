@@ -3,7 +3,7 @@
  * Plugin Name: VETTRYX WP Cookie Manager
  *  * Plugin URI:  https://github.com/vettryx/vettryx-wp-cookie-manager
  * Description: Gerenciador de consentimento nativo, focado em performance e integrado à WP Consent API (LGPD).
- * Version:     1.1.0
+ * Version:     1.2.0
  * Author:      VETTRYX Tech
  * Author URI:  https://vettryx.com.br
  * License:     GPLv3
@@ -14,13 +14,13 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-// Verifica se a classe já existe para evitar conflitos
+// Classe principal do plugin
 class Vettryx_Cookie_Manager {
 
     // Nome da opção onde as configurações serão armazenadas no banco de dados
     private $option_name = 'vettryx_cookie_settings';
 
-    // Construtor: Registra os hooks necessários para o funcionamento do plugin
+    // Inicializa o plugin
     public function __construct() {
         if ( is_admin() ) {
             add_action( 'admin_menu', [ $this, 'add_submenu_page' ] );
@@ -29,10 +29,13 @@ class Vettryx_Cookie_Manager {
             add_action( 'wp_footer', [ $this, 'render_cookie_banner' ], 99 );
         }
 
+        // Regista o shortcode para revogação de consentimento (Exigência LGPD)
+        add_shortcode( 'vettryx_gerenciar_cookies', [ $this, 'render_revoke_shortcode' ] );
+
         add_filter( 'wp_consent_api_registered_' . plugin_basename( __FILE__ ), '__return_true' );
     }
 
-    // Adiciona a página de configurações do plugin como um submenu do VETTRYX Core Modules
+    // Adiciona a página de configurações no menu do admin
     public function add_submenu_page() {
         add_submenu_page(
             'vettryx-core-modules',
@@ -44,7 +47,7 @@ class Vettryx_Cookie_Manager {
         );
     }
 
-    // Registra as configurações do plugin, definindo o tipo de dado e a função de sanitização
+    // Registra as configurações do plugin
     public function register_settings() {
         register_setting( 'vettryx_cookie_group', $this->option_name, [
             'type'              => 'array',
@@ -52,7 +55,7 @@ class Vettryx_Cookie_Manager {
         ] );
     }
 
-    // Função de sanitização: Garante que os dados salvos sejam seguros e estejam no formato correto
+    // Sanitiza os dados recebidos do formulário de configurações
     public function sanitize_data( $input ) {
         if ( ! current_user_can( 'manage_options' ) ) {
             return get_option( $this->option_name );
@@ -63,13 +66,13 @@ class Vettryx_Cookie_Manager {
             'text_color'     => sanitize_hex_color( $input['text_color'] ?? '#f9fafb' ),
             'btn_bg_color'   => sanitize_hex_color( $input['btn_bg_color'] ?? '#2563eb' ),
             'btn_text_color' => sanitize_hex_color( $input['btn_text_color'] ?? '#ffffff' ),
-            'banner_text'    => sanitize_textarea_field( $input['banner_text'] ?? 'Utilizamos cookies para melhorar sua experiência. Ao continuar navegando, você concorda com a nossa Política de Privacidade.' ),
+            'banner_text'    => sanitize_textarea_field( $input['banner_text'] ?? 'Utilizamos cookies para melhorar a sua experiência. Ao continuar a navegar, concorda com a nossa Política de Privacidade.' ),
             'button_text'    => sanitize_text_field( $input['button_text'] ?? 'Aceitar e Continuar' ),
             'privacy_link'   => esc_url_raw( $input['privacy_link'] ?? '' ),
         ];
     }
 
-    // Renderiza a página de configurações do plugin no painel administrativo
+    // Renderiza a página de configurações no admin
     public function render_admin_page() {
         $data = get_option( $this->option_name, [
             'enable_native'  => '1',
@@ -77,7 +80,7 @@ class Vettryx_Cookie_Manager {
             'text_color'     => '#f9fafb',
             'btn_bg_color'   => '#2563eb',
             'btn_text_color' => '#ffffff',
-            'banner_text'    => 'Utilizamos cookies para melhorar sua experiência. Ao continuar navegando, você concorda com a nossa Política de Privacidade.',
+            'banner_text'    => 'Utilizamos cookies para melhorar a sua experiência. Ao continuar a navegar, concorda com a nossa Política de Privacidade.',
             'button_text'    => 'Aceitar e Continuar',
             'privacy_link'   => ''
         ]);
@@ -94,7 +97,7 @@ class Vettryx_Cookie_Manager {
                         <th scope="row"><label for="enable_native">Usar Banner Nativo</label></th>
                         <td>
                             <input type="checkbox" name="<?php echo esc_attr( $this->option_name ); ?>[enable_native]" id="enable_native" value="1" <?php checked( $data['enable_native'], '1' ); ?>>
-                            <span class="description">Desmarque esta opção se você for construir o popup de cookies usando o Elementor (Basta colocar o ID <b>vettryx-accept-cookies</b> no botão do seu Elementor).</span>
+                            <span class="description">Desmarque esta opção se for construir o popup de cookies usando o Elementor (Basta colocar o ID <b>vettryx-accept-cookies</b> no botão do seu Elementor).</span>
                         </td>
                     </tr>
                     
@@ -141,17 +144,35 @@ class Vettryx_Cookie_Manager {
                 
                 <?php submit_button( 'Salvar Configurações' ); ?>
             </form>
+
+            <div style="background: #fff; padding: 15px; border-left: 4px solid #2563eb; margin-top: 30px; box-shadow: 0 1px 1px rgba(0,0,0,.04);">
+                <h3 style="margin-top: 0;">Dica de Conformidade LGPD</h3>
+                <p>Para permitir que os utilizadores revoguem o consentimento a qualquer momento (exigência legal), adicione o seguinte shortcode no rodapé (footer) do site do cliente:</p>
+                <code>[vettryx_gerenciar_cookies texto="Gerir Preferências de Cookies"]</code>
+            </div>
         </div>
         <?php
+    }
+
+    /**
+     * Renderiza o shortcode para o utilizador poder revogar os cookies.
+     */
+    public function render_revoke_shortcode( $atts ) {
+        $atts = shortcode_atts( [
+            'texto'  => 'Gerir Preferências de Cookies',
+            'classe' => ''
+        ], $atts );
+
+        return '<a href="#" id="vettryx-revoke-cookies" class="' . esc_attr( $atts['classe'] ) . '">' . esc_html( $atts['texto'] ) . '</a>';
     }
 
     // Renderiza o banner de cookies no rodapé do site, aplicando as configurações definidas pelo usuário
     public function render_cookie_banner() {
         $data = get_option( $this->option_name, [ 'enable_native' => '1', 'bg_color' => '#111827', 'text_color' => '#f9fafb', 'btn_bg_color' => '#2563eb', 'btn_text_color' => '#ffffff' ] );
         
-        // Renderiza o banner nativo apenas se a opção estiver habilitada. O JavaScript para controle do consentimento é sempre injetado, garantindo que o botão funcione mesmo com um design personalizado via Elementor/Divi.
+        // Renderiza o visual APENAS se o banner nativo estiver ativado
         if ( $data['enable_native'] === '1' ) {
-            $text = !empty($data['banner_text']) ? esc_html($data['banner_text']) : 'Utilizamos cookies para melhorar sua experiência.';
+            $text = !empty($data['banner_text']) ? esc_html($data['banner_text']) : 'Utilizamos cookies para melhorar a sua experiência.';
             $btn  = !empty($data['button_text']) ? esc_html($data['button_text']) : 'Aceitar e Continuar';
             $link = !empty($data['privacy_link']) ? '<a href="'.esc_url($data['privacy_link']).'" style="color: inherit; text-decoration: underline; margin-left: 5px; opacity: 0.8;">Saiba mais</a>' : '';
 
@@ -174,37 +195,35 @@ class Vettryx_Cookie_Manager {
             <?php
         }
 
-        // JavaScript para controlar o consentimento, funcionando tanto para o banner nativo quanto para um design personalizado via Elementor/Divi (basta usar o ID vettryx-accept-cookies no botão de consentimento do seu popup).
+        // O cérebro JavaScript SEMPRE é injetado, mesmo se o visual nativo estiver desligado
         ?>
         <script>
         document.addEventListener('DOMContentLoaded', function() {
             var banner = document.getElementById('vettryx-cookie-banner');
             var hasConsent = document.cookie.indexOf('wp_consent_marketing=allow') !== -1;
             
-            // Exibe o banner nativo apenas se o consentimento ainda não tiver sido dado. Se o banner estiver desativado, presume-se que o site já tem um mecanismo personalizado e o script de consentimento funcionará normalmente.
+            // Exibe o banner nativo (se ele existir no ecrã e não houver consentimento)
             if (!hasConsent && banner) {
                 banner.style.display = 'flex';
             }
             
-            // Adiciona um listener global para cliques, permitindo que o botão funcione tanto no banner nativo quanto em um design personalizado via Elementor/Divi (basta usar o ID vettryx-accept-cookies no botão de consentimento do seu popup).
+            // Delegação de evento: Escuta cliques na página inteira
             document.addEventListener('click', function(event) {
                 var target = event.target;
                 
+                // 1. Ação de ACEITAR COOKIES
                 if (target.id === 'vettryx-accept-cookies' || target.closest('#vettryx-accept-cookies')) {
                     event.preventDefault();
                     
-                    // Animação de saída suave para o banner nativo, se estiver presente
                     if (banner) {
                         banner.style.transform = 'translateY(100%)';
                         setTimeout(function() { banner.style.display = 'none'; }, 300);
                     }
 
-                    // Define o consentimento usando a WP Consent API, se disponível. Caso contrário, define os cookies manualmente como fallback de segurança.
                     if (typeof wp_set_consent === 'function') {
                         wp_set_consent('marketing', 'allow');
                         wp_set_consent('statistics', 'allow');
                     } else {
-                        // Fallback manual: Define os cookies de consentimento por 1 ano, garantindo que o site funcione mesmo sem a WP Consent API (embora seja recomendado usar a API para melhor compatibilidade e controle).
                         document.cookie = "wp_consent_marketing=allow; max-age=31536000; path=/; secure; samesite=lax";
                         document.cookie = "wp_consent_statistics=allow; max-age=31536000; path=/; secure; samesite=lax";
                     }
@@ -214,6 +233,26 @@ class Vettryx_Cookie_Manager {
                     
                     window.location.reload();
                 }
+
+                // 2. Ação de REVOGAR COOKIES (Exigência LGPD)
+                if (target.id === 'vettryx-revoke-cookies' || target.closest('#vettryx-revoke-cookies')) {
+                    event.preventDefault();
+                    
+                    if (typeof wp_set_consent === 'function') {
+                        wp_set_consent('marketing', 'deny');
+                        wp_set_consent('statistics', 'deny');
+                    } else {
+                        // Força a expiração dos cookies no navegador
+                        document.cookie = "wp_consent_marketing=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+                        document.cookie = "wp_consent_statistics=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+                    }
+
+                    var revokeEvent = new CustomEvent('wp_consent_type_defined');
+                    document.dispatchEvent(revokeEvent);
+
+                    // Recarrega a página para o banner voltar e os scripts serem bloqueados
+                    window.location.reload();
+                }
             });
         });
         </script>
@@ -221,5 +260,5 @@ class Vettryx_Cookie_Manager {
     }
 }
 
-// Inicializa o plugin, garantindo que a classe seja instanciada apenas uma vez para evitar conflitos com outros plugins ou temas que possam usar o mesmo nome de classe.
+// Inicializa o plugin
 new Vettryx_Cookie_Manager();

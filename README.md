@@ -36,6 +36,16 @@ Com o **VETTRYX WP Core** instalado e este módulo ativado, acesse **VETTRYX Tec
 2. Crie seu popup no construtor de páginas.
 3. No botão de aceitar cookies do seu popup, vá nas configurações avançadas e adicione o ID: `vettryx-accept-cookies`.
 
+### ⚖️ Conformidade LGPD (Revogação de Consentimento)
+
+A lei exige que o utilizador possa retirar o seu consentimento a qualquer momento de forma fácil. Para cumprir esta regra sem o peso de widgets flutuantes, o módulo disponibiliza um shortcode. 
+
+Basta inserir o seguinte shortcode num widget de texto no rodapé (footer) do site do cliente:
+
+`[vettryx_gerenciar_cookies texto="Gerir Preferências de Cookies"]`
+
+Isto irá gerar um link discreto. Quando clicado, o sistema apaga os cookies de permissão, bloqueia imediatamente o tracking e volta a exibir o banner de consentimento.
+
 ---
 
 **VETTRYX Tech**
