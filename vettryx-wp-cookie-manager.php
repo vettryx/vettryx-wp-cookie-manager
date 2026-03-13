@@ -3,7 +3,7 @@
  * Plugin Name: VETTRYX WP Cookie Manager
  *  * Plugin URI:  https://github.com/vettryx/vettryx-wp-cookie-manager
  * Description: Gerenciador de consentimento nativo, focado em performance e integrado à WP Consent API (LGPD).
- * Version:     1.3.0
+ * Version:     1.3.1
  * Author:      VETTRYX Tech
  * Author URI:  https://vettryx.com.br
  * License:     GPLv3
@@ -141,38 +141,39 @@ E-mail: {$admin_email}</p>
             
             <?php settings_errors( 'vettryx_cookie_messages' ); ?>
 
-            <div style="display: flex; gap: 20px; flex-wrap: wrap;">
-                <div style="flex: 1; min-width: 400px;">
-                    <p><?php _e( 'Configure o banner de consentimento (LGPD) ou desative o visual para criá-lo via Elementor/Divi.', 'vettryx-wp-core' ); ?></p>
-                    
-                    <form method="post" action="options.php">
+            <div style="display: flex; gap: 20px; flex-wrap: wrap; margin-top: 20px;">
+                
+                <div style="flex: 1; min-width: 450px;">
+                    <form method="post" action="options.php" style="background: #fff; padding: 20px; border: 1px solid #ccd0d4; border-radius: 4px;">
                         <?php settings_fields( 'vettryx_cookie_group' ); ?>
                         
+                        <h2 style="margin-top:0">Configurações do Banner</h2>
                         <table class="form-table">
                             <tr>
                                 <th scope="row"><label for="enable_native">Usar Banner Nativo</label></th>
                                 <td>
                                     <input type="checkbox" name="<?php echo esc_attr( $this->option_name ); ?>[enable_native]" id="enable_native" value="1" <?php checked( $data['enable_native'], '1' ); ?>>
+                                    <p class="description">Desative se for usar um popup personalizado via Elementor.</p>
                                 </td>
                             </tr>
-                            <tr><td colspan="2"><hr></td></tr>
                             <tr>
-                                <th scope="row"><label for="bg_color">Cor de Fundo</label></th>
-                                <td><input type="color" name="<?php echo esc_attr( $this->option_name ); ?>[bg_color]" id="bg_color" value="<?php echo esc_attr( $data['bg_color'] ); ?>"></td>
+                                <th scope="row">Cores do Banner</th>
+                                <td>
+                                    <div style="display: flex; gap: 15px; align-items: center;">
+                                        <label>Fundo: <input type="color" name="<?php echo esc_attr( $this->option_name ); ?>[bg_color]" value="<?php echo esc_attr( $data['bg_color'] ); ?>"></label>
+                                        <label>Texto: <input type="color" name="<?php echo esc_attr( $this->option_name ); ?>[text_color]" value="<?php echo esc_attr( $data['text_color'] ); ?>"></label>
+                                    </div>
+                                </td>
                             </tr>
                             <tr>
-                                <th scope="row"><label for="text_color">Cor do Texto</label></th>
-                                <td><input type="color" name="<?php echo esc_attr( $this->option_name ); ?>[text_color]" id="text_color" value="<?php echo esc_attr( $data['text_color'] ); ?>"></td>
+                                <th scope="row">Cores do Botão</th>
+                                <td>
+                                    <div style="display: flex; gap: 15px; align-items: center;">
+                                        <label>Botão: <input type="color" name="<?php echo esc_attr( $this->option_name ); ?>[btn_bg_color]" value="<?php echo esc_attr( $data['btn_bg_color'] ); ?>"></label>
+                                        <label>Texto: <input type="color" name="<?php echo esc_attr( $this->option_name ); ?>[btn_text_color]" value="<?php echo esc_attr( $data['btn_text_color'] ); ?>"></label>
+                                    </div>
+                                </td>
                             </tr>
-                            <tr>
-                                <th scope="row"><label for="btn_bg_color">Cor Botão</label></th>
-                                <td><input type="color" name="<?php echo esc_attr( $this->option_name ); ?>[btn_bg_color]" id="btn_bg_color" value="<?php echo esc_attr( $data['btn_bg_color'] ); ?>"></td>
-                            </tr>
-                            <tr>
-                                <th scope="row"><label for="btn_text_color">Texto Botão</label></th>
-                                <td><input type="color" name="<?php echo esc_attr( $this->option_name ); ?>[btn_text_color]" id="btn_text_color" value="<?php echo esc_attr( $data['btn_text_color'] ); ?>"></td>
-                            </tr>
-                            <tr><td colspan="2"><hr></td></tr>
                             <tr>
                                 <th scope="row"><label for="banner_text">Texto do Banner</label></th>
                                 <td>
@@ -194,19 +195,36 @@ E-mail: {$admin_email}</p>
                         </table>
                         <?php submit_button( 'Salvar Configurações' ); ?>
                     </form>
+
+                    <div style="margin-top: 20px; background: #f0f6fb; padding: 20px; border-left: 4px solid #2271b1; border-radius: 4px;">
+                        <h2 style="margin-top:0; color: #1d2327;"><span class="dashicons dashicons-editor-code" style="vertical-align: middle;"></span> Instruções de Uso</h2>
+                        
+                        <p>Para permitir que o usuário revogue o consentimento (exigido pela LGPD), use uma das opções abaixo:</p>
+                        
+                        <div style="background: #fff; padding: 10px; border: 1px solid #dcdcde; margin-bottom: 10px;">
+                            <strong>1. No Editor de Texto ou Widgets (Shortcode):</strong><br>
+                            <code>[vettryx_gerenciar_cookies texto="Limpar Preferências de Cookies"]</code>
+                        </div>
+
+                        <div style="background: #fff; padding: 10px; border: 1px solid #dcdcde;">
+                            <strong>2. No Elementor (Botões, Ícones ou Menus):</strong><br>
+                            Basta colocar o link abaixo no campo de <b>URL/Link</b> do seu elemento:<br>
+                            <code>#vettryx-revoke</code>
+                        </div>
+                    </div>
                 </div>
 
-                <div style="width: 350px; background: #fff; padding: 20px; border: 1px solid #ccd0d4; box-shadow: 0 1px 1px rgba(0,0,0,.04); align-self: flex-start;">
-                    <h2 style="margin-top: 0; border-bottom: 1px solid #eee; padding-bottom: 10px;">Automação LGPD</h2>
-                    <p style="font-size: 13px; color: #666;">Ainda não tem uma página de Política de Privacidade e Cookies? O VETTRYX Cookie Manager pode gerar uma baseada nos padrões da LGPD/GDPR automaticamente para você.</p>
-                    
-                    <form method="post" action="">
-                        <?php wp_nonce_field( 'vettryx_policy_nonce' ); ?>
-                        <input type="hidden" name="vettryx_generate_policy" value="1">
-                        <?php submit_button( 'Gerar Página de Política Padrão', 'secondary', 'submit', false, ['style' => 'width: 100%; text-align: center;'] ); ?>
-                    </form>
-                    
-                    <p style="font-size: 12px; color: #888; margin-top: 15px;">*A página será criada como <b>Rascunho</b>. Ela já incluirá o seu E-mail, a URL do site e o botão nativo para os utilizadores revogarem o consentimento.</p>
+                <div style="width: 350px;">
+                    <div style="background: #fff; padding: 20px; border: 1px solid #ccd0d4; border-radius: 4px;">
+                        <h2 style="margin-top: 0;">Automação LGPD</h2>
+                        <p style="font-size: 13px; color: #666;">Gere uma página de Política de Privacidade padrão com todos os gatilhos de revogação já configurados.</p>
+                        
+                        <form method="post" action="">
+                            <?php wp_nonce_field( 'vettryx_policy_nonce' ); ?>
+                            <input type="hidden" name="vettryx_generate_policy" value="1">
+                            <?php submit_button( 'Gerar Página de Política', 'secondary', 'submit', false, ['style' => 'width: 100%; text-align: center;'] ); ?>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
@@ -215,12 +233,18 @@ E-mail: {$admin_email}</p>
 
     // Renderiza o shortcode para revogar o consentimento
     public function render_revoke_shortcode( $atts ) {
-        $atts = shortcode_atts( [
-            'texto'  => 'Revogar Consentimento de Cookies',
-            'classe' => ''
-        ], $atts );
-        return '<a href="#" id="vettryx-revoke-cookies" class="' . esc_attr( $atts['classe'] ) . '" style="text-decoration: underline; cursor: pointer;">' . esc_html( $atts['texto'] ) . '</a>';
+    $atts = shortcode_atts( [
+        'texto'  => 'Revogar Consentimento de Cookies',
+        'classe' => '',
+        'return' => 'html'
+    ], $atts );
+
+    if ( $atts['return'] === 'url' ) {
+        return '#vettryx-revoke';
     }
+
+    return '<a href="#" id="vettryx-revoke-cookies" class="' . esc_attr( $atts['classe'] ) . '" style="text-decoration: underline; cursor: pointer;">' . esc_html( $atts['texto'] ) . '</a>';
+}
 
     // Renderiza o banner de cookies
     public function render_cookie_banner() {
@@ -263,6 +287,7 @@ E-mail: {$admin_email}</p>
             document.addEventListener('click', function(event) {
                 var target = event.target;
                 
+                // Aceitar cookies
                 if (target.id === 'vettryx-accept-cookies' || target.closest('#vettryx-accept-cookies')) {
                     event.preventDefault();
                     if (banner) {
@@ -276,12 +301,16 @@ E-mail: {$admin_email}</p>
                         document.cookie = "wp_consent_marketing=allow; max-age=31536000; path=/; secure; samesite=lax";
                         document.cookie = "wp_consent_statistics=allow; max-age=31536000; path=/; secure; samesite=lax";
                     }
-                    var consentEvent = new CustomEvent('wp_consent_type_defined');
-                    document.dispatchEvent(consentEvent);
+                    document.dispatchEvent(new CustomEvent('wp_consent_type_defined'));
                     window.location.reload();
                 }
 
-                if (target.id === 'vettryx-revoke-cookies' || target.closest('#vettryx-revoke-cookies')) {
+                // Revogar cookies
+                var isRevokeTrigger = target.id === 'vettryx-revoke-cookies' || 
+                                    target.closest('#vettryx-revoke-cookies') || 
+                                    (target.closest('a') && target.closest('a').getAttribute('href') === '#vettryx-revoke');
+
+                if (isRevokeTrigger) {
                     event.preventDefault();
                     if (typeof wp_set_consent === 'function') {
                         wp_set_consent('marketing', 'deny');
@@ -290,8 +319,7 @@ E-mail: {$admin_email}</p>
                         document.cookie = "wp_consent_marketing=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
                         document.cookie = "wp_consent_statistics=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
                     }
-                    var revokeEvent = new CustomEvent('wp_consent_type_defined');
-                    document.dispatchEvent(revokeEvent);
+                    document.dispatchEvent(new CustomEvent('wp_consent_type_defined'));
                     window.location.reload();
                 }
             });
