@@ -1,12 +1,13 @@
 <?php
 /**
  * Plugin Name: VETTRYX WP Cookie Manager
- *  * Plugin URI:  https://github.com/vettryx/vettryx-wp-cookie-manager
- * Description: Gerenciador de consentimento nativo, focado em performance e integrado à WP Consent API (LGPD).
- * Version:     1.3.1
+ * Plugin URI:  https://github.com/vettryx/vettryx-wp-core
+ * Description: Gerenciador de consentimento nativo e gerador de políticas integrado à WP Consent API (LGPD).
+ * Version:     1.3.2
  * Author:      VETTRYX Tech
  * Author URI:  https://vettryx.com.br
- * License:     GPLv3
+ * License:     Proprietária (Uso Comercial Exclusivo)
+ * Vettryx Icon: dashicons-shield
  */
 
 // Segurança: Evita acesso direto ao arquivo
